@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI产品研发全流程 · Neon Circuit</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+        *{margin:0;padding:0;box-sizing:border-box;}
+
+        :root{
+            --bg:#06060b;
+            --bg2:#0a0a12;
+            --bg3:#0e0e18;
+            --bg4:#12121e;
+            --neon:#00ff88;
+            --neon-dim:rgba(0,255,136,0.5);
+            --neon-low:rgba(0,255,136,0.15);
+            --neon-vlow:rgba(0,255,136,0.06);
+            --cyan:#00e5ff;
+            --cyan-low:rgba(0,229,255,0.12);
+            --purple:#bf5af2;
+            --purple-low:rgba(191,90,242,0.12);
+            --amber:#ffb800;
+            --amber-low:rgba(255,184,0,0.12);
+            --red:#ff3b5c;
+            --red-low:rgba(255,59,92,0.12);
+            --blue:#3b82f6;
+            --blue-low:rgba(59,130,246,0.12);
+            --pink:#ff6eb4;
+            --pink-low:rgba(255,110,180,0.12);
+            --text:#c8c8d0;
+            --text-dim:#5a5a6e;
+            --text-bright:#eeeef2;
+            --border:rgba(0,255,136,0.08);
+            --border2:rgba(0,255,136,0.15);
+            --grid:rgba(0,255,136,0.025);
+            --shadow:0 0 30px rgba(0,255,136,0.06);
+            --glow:0 0 20px rgba(0,255,136,0.15);
+        }
+
+        html{scroll-behavior:smooth;}
+
+        body{
+            font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;
+            background:var(--bg);
+            color:var(--text);
+            line-height:1.7;
+            font-size:15px;
+            background-image:
+                linear-gradient(var(--grid) 1px,transparent 1px),
+                linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+            background-size:50px 50px;
+            background-attachment:fixed;
+        }
+
+        /* ============ UTILITY ============ */
+        .container{max-width:1100px;margin:0 auto;padding:0 28px;}
+        .glow-text{color:var(--neon);text-shadow:0 0 12px rgba(0,255,136,0.4);}
+        .hl{color:var(--neon);font-weight:700;}
+        .hl-amber{color:var(--amber);font-weight:700;}
+        .hl-cyan{color:var(--cyan);font-weight:700;}
+        .hl-purple{color:var(--purple);font-weight:700;}
+
+        /* ============ NAV ============ */
+        .top-nav{
+            position:fixed;top:0;left:0;right:0;z-index:999;
+            background:rgba(6,6,11,0.85);
+            backdrop-filter:blur(20px);
+            border-bottom:1px solid var(--border);
+            padding:0 28px;
+            display:flex;align-items:center;height:56px;
+        }
+        .nav-logo{
+            font-weight:800;font-size:15px;color:var(--neon);
+            display:flex;align-items:center;gap:8px;
+            text-shadow:0 0 10px rgba(0,255,136,0.3);
+            flex-shrink:0;
+        }
+        .nav-logo .logo-box{
+            background:var(--neon);color:var(--bg);
+            padding:2px 8px;border-radius:3px;font-size:12px;font-weight:900;
+        }
+        .nav-links{
+            display:flex;gap:0;margin-left:40px;height:100%;
+        }
+        .nav-link{
+            padding:0 18px;height:100%;display:flex;align-items:center;
+            font-size:13px;font-weight:600;color:var(--text-dim);
+            text-decoration:none;border-bottom:2px solid transparent;
+            transition:all 0.2s;cursor:pointer;white-space:nowrap;
+        }
+        .nav-link:hover{color:var(--text);}
+        .nav-link.active{color:var(--neon);border-bottom-color:var(--neon);}
+
+        /* ============ HERO ============ */
+        .hero{
+            padding:140px 0 80px;text-align:center;
+            position:relative;overflow:hidden;
+        }
+        .hero::before{
+            content:'';position:absolute;
+            top:-200px;left:50%;transform:translateX(-50%);
+            width:800px;height:800px;
+            background:radial-gradient(circle,rgba(0,255,136,0.04) 0%,transparent 60%);
+            pointer-events:none;
+        }
+        .hero h1{
+            font-size:3.2rem;font-weight:900;
+            color:var(--neon);
+            text-shadow:0 0 40px rgba(0,255,136,0.25);
+            margin-bottom:12px;letter-spacing:-1px;
+        }
+        .hero .subtitle{
+            font-size:1.15rem;color:var(--text-dim);max-width:600px;margin:0 auto 40px;
+        }
+        .hero .terminal-hint{
+            display:inline-block;
+            background:var(--bg3);border:1px solid var(--border2);
+            padding:10px 24px;border-radius:6px;
+            font-family:monospace;font-size:14px;color:var(--neon);
+        }
+        .hero .terminal-hint .cursor{
+            animation:blink 1s infinite;
+        }
+        @keyframes blink{0%,50%{opacity:1;}51%,100%{opacity:0;}}
+
+        /* ============ SECTION COMMON ============ */
+        .phase-section{
+            padding:80px 0 60px;
+            position:relative;
+        }
+        .phase-section::before{
+            content:'';position:absolute;left:0;right:0;top:0;
+            height:1px;
+            background:linear-gradient(90deg,transparent,var(--border2),transparent);
+        }
+        .phase-header{
+            margin-bottom:40px;
+        }
+        .phase-label{
+            font-size:12px;font-weight:700;letter-spacing:2px;
+            text-transform:uppercase;margin-bottom:8px;
+            display:flex;align-items:center;gap:8px;
+        }
+        .phase-label .label-line{
+            width:40px;height:2px;
+        }
+        .phase-title{
+            font-size:2rem;font-weight:800;color:var(--text-bright);
+            margin-bottom:6px;letter-spacing:-0.5px;
+        }
+        .phase-desc{
+            font-size:0.95rem;color:var(--text-dim);max-width:700px;
+        }
+
+        /* ============ SVG FLOW ============ */
+        .flow-box{
+            background:var(--bg2);
+            border:1px solid var(--border);
+            border-radius:12px;
+            padding:32px 24px;
+            margin-bottom:32px;
+            overflow-x:auto;
+            position:relative;
+        }
+        .flow-box::before{
+            content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+            background-image:
+                linear-gradient(var(--grid) 1px,transparent 1px),
+                linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+            background-size:30px 30px;
+            pointer-events:none;border-radius:12px;
+        }
+        .flow-box h3{
+            font-size:13px;font-weight:700;color:var(--text-dim);
+            margin-bottom:20px;display:flex;align-items:center;gap:6px;
+            letter-spacing:1px;text-transform:uppercase;
+            position:relative;z-index:1;
+        }
+        .flow-box h3 .h3-dot{
+            width:6px;height:6px;border-radius:50%;background:var(--neon);
+            box-shadow:0 0 6px var(--neon);
+        }
+        .flow-svg{display:block;margin:0 auto;position:relative;z-index:1;}
+
+        /* SVG phase node hover: scale from center, no color change */
+        .svg-phase-node{
+            cursor:pointer;
+            transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .svg-phase-node:hover{
+            transform:scale(1.08);
+        }
+
+        /* ============ STEP BLOCKS ============ */
+        .step-block{
+            background:var(--bg2);
+            border:1px solid var(--border);
+            border-radius:12px;
+            margin-bottom:24px;
+            overflow:hidden;
+            transition:border-color 0.3s;
+        }
+        .step-block:hover{border-color:var(--border2);}
+
+        .step-header{
+            padding:24px 28px;
+            cursor:pointer;
+            display:flex;align-items:center;gap:16px;
+            transition:background 0.2s;
+        }
+        .step-header:hover{background:var(--bg3);}
+
+        .step-num{
+            width:40px;height:40px;border-radius:8px;
+            display:flex;align-items:center;justify-content:center;
+            font-size:14px;font-weight:800;flex-shrink:0;
+            border:1px solid;
+        }
+
+        .step-info{flex:1;}
+        .step-info h4{font-size:1.05rem;font-weight:700;color:var(--text-bright);margin-bottom:2px;}
+        .step-info p{font-size:0.85rem;color:var(--text-dim);}
+
+        .step-chevron{
+            font-size:14px;color:var(--text-dim);
+            transition:transform 0.3s;flex-shrink:0;
+        }
+        .step-block.open .step-chevron{transform:rotate(180deg);}
+
+        .step-body{
+            max-height:0;overflow:hidden;
+            transition:max-height 0.5s cubic-bezier(0.4,0,0.2,1);
+        }
+        .step-block.open .step-body{max-height:8000px;}
+
+        .step-content{padding:0 28px 28px;}
+
+        /* ============ ROLES BAR ============ */
+        .roles-bar{
+            display:flex;align-items:center;gap:8px;
+            margin-bottom:20px;flex-wrap:wrap;
+        }
+        .roles-label{
+            font-size:12px;color:var(--text-dim);font-weight:700;
+            letter-spacing:0.5px;margin-right:4px;
+        }
+        .role-tag{
+            display:inline-flex;align-items:center;gap:4px;
+            padding:4px 12px;border-radius:4px;
+            font-size:12px;font-weight:600;
+            border:1px solid;
+        }
+        .r-pm{background:var(--amber-low);color:var(--amber);border-color:rgba(255,184,0,0.25);}
+        .r-algo{background:var(--purple-low);color:var(--purple);border-color:rgba(191,90,242,0.25);}
+        .r-be{background:var(--blue-low);color:var(--blue);border-color:rgba(59,130,246,0.25);}
+        .r-fe{background:var(--cyan-low);color:var(--cyan);border-color:rgba(0,229,255,0.25);}
+        .r-data{background:var(--neon-vlow);color:var(--neon);border-color:rgba(0,255,136,0.2);}
+        .r-test{background:var(--pink-low);color:var(--pink);border-color:rgba(255,110,180,0.25);}
+        .r-ops{background:rgba(255,158,67,0.1);color:#ff9e43;border-color:rgba(255,158,67,0.25);}
+        .r-biz{background:var(--red-low);color:var(--red);border-color:rgba(255,59,92,0.25);}
+        .r-lead{
+            background:rgba(0,255,136,0.08);color:var(--neon);
+            border:1px solid rgba(0,255,136,0.3);
+            font-weight:800;
+            box-shadow:0 0 8px rgba(0,255,136,0.1);
+        }
+
+        /* ============ MINI FLOW (INLINE) ============ */
+        .mini-flow{
+            display:flex;align-items:center;gap:0;
+            margin:16px 0;overflow-x:auto;padding:8px 0;
+        }
+        .mf-node{
+            padding:8px 16px;font-size:13px;font-weight:600;
+            white-space:nowrap;flex-shrink:0;
+            border:1px solid;border-radius:4px;
+            transition:all 0.2s;cursor:default;
+        }
+        .mf-arrow{
+            color:var(--text-dim);font-size:14px;padding:0 6px;flex-shrink:0;
+        }
+        .mf-neon{background:var(--neon-vlow);color:var(--neon);border-color:rgba(0,255,136,0.2);}
+        .mf-amber{background:var(--amber-low);color:var(--amber);border-color:rgba(255,184,0,0.2);}
+        .mf-cyan{background:var(--cyan-low);color:var(--cyan);border-color:rgba(0,229,255,0.2);}
+        .mf-purple{background:var(--purple-low);color:var(--purple);border-color:rgba(191,90,242,0.2);}
+        .mf-red{background:var(--red-low);color:var(--red);border-color:rgba(255,59,92,0.2);}
+        .mf-blue{background:var(--blue-low);color:var(--blue);border-color:rgba(59,130,246,0.2);}
+        .mf-go{background:rgba(0,255,136,0.1);color:var(--neon);border-color:rgba(0,255,136,0.3);box-shadow:0 0 8px rgba(0,255,136,0.1);}
+
+        /* ============ DATA TABLE ============ */
+        .data-table{
+            width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;
+        }
+        .data-table th,.data-table td{
+            padding:14px 18px;text-align:left;
+            border-bottom:1px solid rgba(255,255,255,0.04);
+        }
+        .data-table th{
+            background:var(--bg3);color:var(--neon);font-weight:700;
+            width:150px;white-space:nowrap;font-size:13px;
+            border-right:2px solid rgba(0,255,136,0.1);
+        }
+        .data-table td{color:var(--text);}
+        .data-table tr:hover td{background:rgba(0,255,136,0.02);}
+        .data-table tr:last-child th,
+        .data-table tr:last-child td{border-bottom:none;}
+
+        /* ============ ALERTS ============ */
+        .alert{
+            padding:14px 18px;border-radius:6px;margin:16px 0;
+            font-size:13px;display:flex;gap:10px;align-items:flex-start;
+            border-left:3px solid;
+        }
+        .alert-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+        .alert.warn{background:rgba(255,184,0,0.05);border-color:var(--amber);color:var(--amber);}
+        .alert.tip{background:rgba(0,255,136,0.03);border-color:var(--neon);color:var(--neon);}
+        .alert.info{background:rgba(0,229,255,0.04);border-color:var(--cyan);color:var(--cyan);}
+
+        /* ============ EXPANDABLE SUB ============ */
+        .sub-block{
+            border:1px solid rgba(255,255,255,0.04);border-radius:8px;
+            margin:16px 0;overflow:hidden;
+        }
+        .sub-header{
+            padding:14px 18px;background:var(--bg3);cursor:pointer;
+            display:flex;align-items:center;gap:10px;
+            font-size:13px;font-weight:700;color:var(--text);
+            transition:background 0.2s;
+        }
+        .sub-header:hover{background:var(--bg4);}
+        .sub-header .sb-arr{
+            font-size:11px;color:var(--text-dim);transition:transform 0.2s;
+        }
+        .sub-block.open .sb-arr{transform:rotate(90deg);}
+        .sub-body{display:none;padding:18px;background:var(--bg2);}
+        .sub-block.open .sub-body{display:block;}
+
+        /* ============ DELIVERABLES (VISUAL) ============ */
+        .deliverables{
+            background:var(--bg3);border:1px solid rgba(191,90,242,0.15);
+            border-radius:10px;padding:20px 24px;margin:20px 0;
+            position:relative;overflow:hidden;
+        }
+        .deliverables::before{
+            content:'';position:absolute;top:0;left:0;width:3px;height:100%;
+            background:linear-gradient(180deg,var(--purple),transparent);
+        }
+        .deliverables h5{
+            font-size:12px;color:var(--purple);font-weight:700;
+            letter-spacing:1px;text-transform:uppercase;margin-bottom:14px;
+        }
+        .deliv-grid{
+            display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;
+        }
+        .deliv-item{
+            background:var(--bg2);border:1px solid rgba(255,255,255,0.04);
+            border-radius:8px;padding:16px;
+            display:flex;align-items:flex-start;gap:12px;
+        }
+        .deliv-icon{
+            width:40px;height:40px;border-radius:8px;
+            display:flex;align-items:center;justify-content:center;
+            font-size:18px;flex-shrink:0;
+            background:rgba(191,90,242,0.08);border:1px solid rgba(191,90,242,0.15);
+        }
+        .deliv-text{
+            font-size:13px;color:var(--text);font-weight:600;
+        }
+        .deliv-text small{
+            display:block;font-size:11px;color:var(--text-dim);font-weight:400;margin-top:2px;
+        }
+
+        /* ============ ROLE DIALOG (CHAT) ============ */
+        .dialog-box{
+            background:var(--bg3);border:1px solid var(--border);
+            border-radius:12px;padding:24px;margin:20px 0;
+            position:relative;overflow:hidden;
+        }
+        .dialog-box::before{
+            content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+            background-image:
+                linear-gradient(var(--grid) 1px,transparent 1px),
+                linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+            background-size:20px 20px;pointer-events:none;
+        }
+        .dialog-title{
+            font-size:12px;font-weight:700;color:var(--text-dim);
+            letter-spacing:1px;text-transform:uppercase;
+            margin-bottom:16px;position:relative;z-index:1;
+            display:flex;align-items:center;gap:8px;
+        }
+        .dialog-title .dt-icon{
+            width:6px;height:6px;border-radius:50%;
+            background:var(--neon);box-shadow:0 0 6px var(--neon);
+        }
+        .chat-thread{
+            position:relative;z-index:1;
+            display:flex;flex-direction:column;gap:12px;
+        }
+        .chat-msg{
+            display:flex;gap:12px;align-items:flex-start;
+            opacity:0;transform:translateY(10px);
+            animation:chatIn 0.4s forwards;
+        }
+        .chat-msg:nth-child(1){animation-delay:0.1s;}
+        .chat-msg:nth-child(2){animation-delay:0.5s;}
+        .chat-msg:nth-child(3){animation-delay:0.9s;}
+        .chat-msg:nth-child(4){animation-delay:1.3s;}
+        .chat-msg:nth-child(5){animation-delay:1.7s;}
+        .chat-msg:nth-child(6){animation-delay:2.1s;}
+        .chat-msg:nth-child(7){animation-delay:2.5s;}
+        .chat-msg:nth-child(8){animation-delay:2.9s;}
+
+        @keyframes chatIn{
+            to{opacity:1;transform:translateY(0);}
+        }
+
+        .chat-avatar{
+            width:32px;height:32px;border-radius:6px;
+            display:flex;align-items:center;justify-content:center;
+            font-size:14px;flex-shrink:0;font-weight:800;
+            border:1px solid;
+        }
+        .chat-bubble{
+            background:var(--bg2);border:1px solid rgba(255,255,255,0.04);
+            border-radius:8px;padding:10px 14px;
+            max-width:480px;
+        }
+        .chat-name{
+            font-size:11px;font-weight:700;margin-bottom:2px;
+        }
+        .chat-text{
+            font-size:13px;color:var(--text);line-height:1.6;
+        }
+        .chat-text strong{color:var(--text-bright);}
+        .chat-time{
+            font-size:10px;color:var(--text-dim);margin-top:4px;
+        }
+        .chat-note{
+            font-size:12px;color:var(--text-dim);
+            text-align:center;padding:8px;font-style:italic;
+            opacity:0;animation:chatIn 0.4s forwards;
+            animation-delay:0.3s;
+        }
+
+        /* ============ CHECKLIST ============ */
+        .checklist-area{position:relative;}
+        .checklist-tip{
+            display:inline-block;
+            background:var(--bg3);border:1px solid var(--border2);border-radius:8px;
+            padding:8px 16px;font-size:12px;color:var(--text-dim);
+            margin-bottom:12px;line-height:1.5;
+            transition:all 0.3s;
+        }
+        .checklist-tip.done{color:var(--neon);border-color:rgba(0,255,136,0.3);}
+        .checklist{list-style:none;margin:8px 0 16px;}
+        .checklist li{
+            padding:10px 14px;display:flex;align-items:center;gap:12px;
+            border-radius:6px;cursor:pointer;transition:background 0.15s;
+            font-size:14px;
+        }
+        .checklist li:hover{background:var(--bg3);}
+        .checklist li.locked{cursor:default;opacity:0.7;}
+        .checklist li.locked:hover{background:transparent;}
+        .chk-box{
+            width:20px;height:20px;border:2px solid rgba(255,255,255,0.15);
+            border-radius:4px;display:flex;align-items:center;justify-content:center;
+            flex-shrink:0;transition:all 0.15s;font-size:12px;color:transparent;
+        }
+        .checklist li.checked .chk-box{
+            background:var(--neon);border-color:var(--neon);color:var(--bg);
+        }
+        .checklist li.checked>span{text-decoration:line-through;color:var(--text-dim);}
+
+        /* ============ CELEBRATION ============ */
+        .celebration-overlay{
+            position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;
+            display:flex;align-items:center;justify-content:center;
+            background:rgba(6,6,11,0.85);backdrop-filter:blur(8px);
+            opacity:0;pointer-events:none;transition:opacity 0.4s;
+        }
+        .celebration-overlay.show{opacity:1;pointer-events:auto;}
+        .celebration-box{text-align:center;animation:celebPop 0.5s cubic-bezier(0.34,1.56,0.64,1);}
+        @keyframes celebPop{0%{transform:scale(0.5);opacity:0;}100%{transform:scale(1);opacity:1;}}
+        .celebration-box .celeb-icon{font-size:5rem;margin-bottom:16px;}
+        .celebration-box .celeb-text{font-size:1.5rem;font-weight:800;color:var(--neon);text-shadow:0 0 30px rgba(0,255,136,0.4);margin-bottom:8px;}
+        .celebration-box .celeb-sub{font-size:1rem;color:var(--text-dim);}
+        #confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10001;}
+
+        /* ============ PRINCIPLES ============ */
+        .principle-grid{
+            display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;
+        }
+        .principle-item{
+            background:var(--bg2);border:1px solid var(--border);
+            border-left:3px solid var(--neon);border-radius:8px;
+            padding:24px;transition:all 0.3s;
+        }
+        .principle-item:hover{
+            border-color:var(--border2);
+            box-shadow:var(--shadow);
+        }
+        .principle-item h4{font-size:1rem;color:var(--text-bright);margin-bottom:6px;}
+        .principle-item p{font-size:0.9rem;color:var(--text-dim);}
+
+        /* ============ SECTION CONNECTOR ============ */
+        .section-connector{
+            display:flex;justify-content:center;padding:20px 0;
+        }
+        .connector-line{
+            width:2px;height:60px;
+            background:linear-gradient(180deg,var(--neon),transparent);
+            box-shadow:0 0 8px rgba(0,255,136,0.15);
+        }
+
+        /* ============ SCROLLBAR ============ */
+        ::-webkit-scrollbar{width:8px;height:8px;}
+        ::-webkit-scrollbar-track{background:var(--bg);}
+        ::-webkit-scrollbar-thumb{background:rgba(0,255,136,0.1);border-radius:4px;}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(0,255,136,0.2);}
+
+        /* ============ RESPONSIVE ============ */
+        @media(max-width:768px){
+            .hero h1{font-size:2rem;}
+            .phase-title{font-size:1.5rem;}
+            .container{padding:0 16px;}
+            .nav-links{display:none;}
+            .deliv-grid{grid-template-columns:1fr;}
+            .principle-grid{grid-template-columns:1fr;}
+        }
+    </style>
+</head>
+<body>
+
+<!-- Celebration overlay & confetti -->
+<canvas id="confetti-canvas"></canvas>
+<div class="celebration-overlay" id="celebOverlay">
+    <div class="celebration-box">
+        <div class="celeb-icon">🎉🚀🎊</div>
+        <div class="celeb-text">Checklist 检查完成！</div>
+        <div class="celeb-sub">终于要上线咯！！</div>
+    </div>
+</div>
+
+<!-- NAV -->
+<div class="top-nav">
+    <div class="nav-logo">
+        <span class="logo-box">AI</span> PRODUCT_PIPELINE
+    </div>
+    <div class="nav-links">
+        <a class="nav-link active" href="#hero">HOME</a>
+        <a class="nav-link" href="#need">需求阶段</a>
+        <a class="nav-link" href="#dev">开发阶段</a>
+        <a class="nav-link" href="#ops">运营阶段</a>
+        <a class="nav-link" href="#principles">核心原则</a>
+    </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+    <div class="container">
+        <h1>> AI_PRODUCT_R&D</h1>
+        <p class="subtitle">从需求挖掘到商业化上线，系统掌握AI产品研发全流程的每个关键环节、角色协作与交付标准</p>
+        <div class="terminal-hint">$ start learning --mode=interactive<span class="cursor">_</span></div>
+    </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- OVERVIEW FLOW — 修改1: 悬停放大+点击跳转+飞轮线y=120 -->
+<!-- ============================================================ -->
+<div class="container">
+    <div class="flow-box">
+        <h3><span class="h3-dot"></span> FULL PIPELINE · 全局流程总览</h3>
+        <svg class="flow-svg" viewBox="0 0 1050 145" width="100%" height="145" style="min-width:900px;">
+            <defs>
+                <marker id="aN" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#00ff88"/></marker>
+                <marker id="aG" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#3a3a4a"/></marker>
+                <marker id="aA" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#ffb800"/></marker>
+                <marker id="aB" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#3b82f6"/></marker>
+                <marker id="aC" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#00e5ff"/></marker>
+            </defs>
+            <!-- Start -->
+            <rect x="10" y="20" width="70" height="36" rx="18" fill="none" stroke="#3a3a4a" stroke-width="1.5"/>
+            <text x="45" y="42" text-anchor="middle" fill="#5a5a6e" font-size="12" font-weight="700">START</text>
+            <line x1="80" y1="38" x2="110" y2="38" stroke="#3a3a4a" stroke-width="1.5" marker-end="url(#aG)"/>
+            <!-- Need Phase — clickable, hover scale from center -->
+            <g class="svg-phase-node" style="transform-origin:210px 38px;" onclick="document.getElementById('need').scrollIntoView({behavior:'smooth'})">
+                <rect x="110" y="15" width="200" height="46" rx="6" fill="rgba(255,184,0,0.06)" stroke="#ffb800" stroke-width="1.5"/>
+                <text x="210" y="35" text-anchor="middle" fill="#ffb800" font-size="14" font-weight="800">🟡 需求阶段</text>
+                <text x="210" y="50" text-anchor="middle" fill="rgba(255,184,0,0.5)" font-size="10">需求挖掘 → POC → MVP</text>
+            </g>
+            <line x1="310" y1="38" x2="360" y2="38" stroke="#ffb800" stroke-width="1.5" marker-end="url(#aA)"/>
+            <!-- Dev Phase -->
+            <g class="svg-phase-node" style="transform-origin:490px 38px;" onclick="document.getElementById('dev').scrollIntoView({behavior:'smooth'})">
+                <rect x="360" y="15" width="260" height="46" rx="6" fill="rgba(59,130,246,0.06)" stroke="#3b82f6" stroke-width="1.5"/>
+                <text x="490" y="35" text-anchor="middle" fill="#3b82f6" font-size="14" font-weight="800">🔵 开发阶段</text>
+                <text x="490" y="50" text-anchor="middle" fill="rgba(59,130,246,0.5)" font-size="10">数据 → 模型 → 产品 → 测试</text>
+            </g>
+            <line x1="620" y1="38" x2="670" y2="38" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#aB)"/>
+            <!-- Ops Phase -->
+            <g class="svg-phase-node" style="transform-origin:775px 38px;" onclick="document.getElementById('ops').scrollIntoView({behavior:'smooth'})">
+                <rect x="670" y="15" width="210" height="46" rx="6" fill="rgba(0,255,136,0.06)" stroke="#00ff88" stroke-width="1.5"/>
+                <text x="775" y="35" text-anchor="middle" fill="#00ff88" font-size="14" font-weight="800">🟢 运营阶段</text>
+                <text x="775" y="50" text-anchor="middle" fill="rgba(0,255,136,0.5)" font-size="10">上线 → 数据回流 → 迭代</text>
+            </g>
+            <line x1="880" y1="38" x2="930" y2="38" stroke="#00ff88" stroke-width="1.5" marker-end="url(#aN)"/>
+            <!-- End -->
+            <rect x="930" y="20" width="70" height="36" rx="18" fill="none" stroke="#3a3a4a" stroke-width="1.5"/>
+            <text x="965" y="42" text-anchor="middle" fill="#5a5a6e" font-size="12" font-weight="700">LOOP</text>
+            <!-- Feedback loop: y=120, stroke-width=1.2, #00e5ff -->
+            <path d="M965,56 L965,120 L210,120 L210,61" fill="none" stroke="#00e5ff" stroke-width="1.2" stroke-dasharray="6,4" marker-end="url(#aC)"/>
+            <text x="588" y="116" text-anchor="middle" fill="#00e5ff" font-size="11" font-weight="600" opacity="0.7">🔄 数据飞轮 · 持续循环</text>
+        </svg>
+    </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!--                     需求阶段                                   -->
+<!-- ============================================================ -->
+<section class="phase-section" id="need">
+<div class="container">
+    <div class="phase-header">
+        <div class="phase-label" style="color:var(--amber);">
+            <span class="label-line" style="background:var(--amber);"></span> PHASE 01 · 需求阶段
+        </div>
+        <div class="phase-title">🟡 找到值得用AI解决的真问题</div>
+        <div class="phase-desc">从需求来源到MVP规划，以最小成本验证AI技术可行性，并确定第一版产品形态</div>
+    </div>
+
+    <!-- 修改2: 需求阶段流程图 — 完全按截图重绘 -->
+    <div class="flow-box">
+        <h3><span class="h3-dot" style="background:var(--amber);box-shadow:0 0 6px var(--amber);"></span> 需求阶段流程图</h3>
+        <svg class="flow-svg" viewBox="0 0 1100 520" width="100%" height="520" style="min-width:950px;">
+            <defs>
+                <marker id="aAmber" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#ffb800"/></marker>
+                <marker id="aRed" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#ff3b5c"/></marker>
+                <marker id="aOra" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#ff9e43"/></marker>
+                <marker id="aGreen2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#00ff88"/></marker>
+                <marker id="aGray2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#5a5a6e"/></marker>
+            </defs>
+            <!-- ===== ROW 1: y_center=50 ===== -->
+            <rect x="40" y="30" width="110" height="42" rx="21" fill="none" stroke="#5a5a6e" stroke-width="1.3"/>
+            <text x="95" y="55" text-anchor="middle" fill="#5a5a6e" font-size="12" font-weight="600">需求来源</text>
+            <line x1="150" y1="51" x2="200" y2="51" stroke="#ffb800" stroke-width="1.3" marker-end="url(#aAmber)"/>
+            <rect x="200" y="30" width="160" height="42" rx="6" fill="rgba(255,184,0,0.06)" stroke="#ffb800" stroke-width="1.3"/>
+            <text x="280" y="55" text-anchor="middle" fill="#ffb800" font-size="13" font-weight="700">① 需求入池</text>
+            <line x1="360" y1="51" x2="420" y2="51" stroke="#ffb800" stroke-width="1.3" marker-end="url(#aAmber)"/>
+            <rect x="420" y="30" width="160" height="42" rx="6" fill="rgba(255,184,0,0.06)" stroke="#ffb800" stroke-width="1.3"/>
+            <text x="500" y="55" text-anchor="middle" fill="#ffb800" font-size="13" font-weight="700">② 需求评审</text>
+            <line x1="580" y1="51" x2="650" y2="51" stroke="#ffb800" stroke-width="1.3" marker-end="url(#aAmber)"/>
+            <rect x="650" y="30" width="190" height="42" rx="6" fill="rgba(255,184,0,0.06)" stroke="#ffb800" stroke-width="1.3"/>
+            <text x="745" y="55" text-anchor="middle" fill="#ffb800" font-size="13" font-weight="700">③ AI适配性判断</text>
+            <!-- ③ down to connection point y=100 -->
+            <line x1="745" y1="72" x2="745" y2="100" stroke="#ffb800" stroke-width="1.3"/>
+            <!-- horizontal left to ④ x center (420) -->
+            <line x1="745" y1="100" x2="420" y2="100" stroke="#ffb800" stroke-width="1.3"/>
+            <!-- down to ④ top -->
+            <line x1="420" y1="100" x2="420" y2="185" stroke="#ffb800" stroke-width="1.3" marker-end="url(#aAmber)"/>
+            <!-- ===== PIVOT line: solid orange, y=145, well below connector (y=100), well above row2 (y=185) ===== -->
+            <line x1="860" y1="145" x2="420" y2="145" stroke="#ff9e43" stroke-width="1.5"/>
+            <line x1="420" y1="145" x2="420" y2="185" stroke="#ff9e43" stroke-width="1.5" marker-end="url(#aOra)"/>
+            <text x="640" y="138" text-anchor="middle" fill="#ff9e43" font-size="12" font-weight="700">PIVOT · 换方案重试</text>
+            <!-- ===== ROW 2: y_center=206 ===== -->
+            <rect x="320" y="185" width="200" height="42" rx="6" fill="rgba(255,184,0,0.06)" stroke="#ffb800" stroke-width="1.3"/>
+            <text x="420" y="210" text-anchor="middle" fill="#ffb800" font-size="13" font-weight="700">④ 快速原型</text>
+            <line x1="520" y1="206" x2="590" y2="206" stroke="#ffb800" stroke-width="1.3" marker-end="url(#aAmber)"/>
+            <rect x="590" y="185" width="200" height="42" rx="6" fill="rgba(255,184,0,0.06)" stroke="#ffb800" stroke-width="1.3"/>
+            <text x="690" y="210" text-anchor="middle" fill="#ffb800" font-size="13" font-weight="700">⑤ POC测试</text>
+            <line x1="790" y1="206" x2="820" y2="206" stroke="#ffb800" stroke-width="1.3" marker-end="url(#aAmber)"/>
+            <!-- Diamond Go? -->
+            <polygon points="860,170 920,206 860,242 800,206" fill="rgba(255,184,0,0.04)" stroke="#ffb800" stroke-width="1.5"/>
+            <text x="860" y="210" text-anchor="middle" fill="#ffb800" font-size="14" font-weight="800">Go?</text>
+            <!-- GO → ⑥ MVP规划 -->
+            <line x1="920" y1="206" x2="970" y2="206" stroke="#00ff88" stroke-width="1.5" marker-end="url(#aGreen2)"/>
+            <text x="945" y="197" text-anchor="middle" fill="#00ff88" font-size="11" font-weight="700">GO</text>
+            <rect x="970" y="185" width="110" height="42" rx="6" fill="rgba(255,184,0,0.08)" stroke="#ffb800" stroke-width="1.5"/>
+            <text x="1025" y="210" text-anchor="middle" fill="#ffb800" font-size="14" font-weight="800">⑥ MVP规划</text>
+            <!-- PIVOT: diamond top → up to y=145 then left (already drawn above) -->
+            <line x1="860" y1="170" x2="860" y2="145" stroke="#ff9e43" stroke-width="1.5"/>
+            <!-- KILL ↓ -->
+            <line x1="860" y1="242" x2="860" y2="280" stroke="#ff3b5c" stroke-width="1.3" marker-end="url(#aRed)"/>
+            <text x="882" y="268" fill="#ff3b5c" font-size="11" font-weight="700">KILL</text>
+            <rect x="825" y="282" width="72" height="32" rx="4" fill="rgba(255,59,92,0.08)" stroke="#ff3b5c" stroke-width="1"/>
+            <text x="861" y="302" text-anchor="middle" fill="#ff3b5c" font-size="12" font-weight="600">放弃</text>
+            <!-- ===== MVP sub steps: dashed box, y=350~430, clearly below KILL ===== -->
+            <line x1="1025" y1="227" x2="1025" y2="345" stroke="rgba(255,184,0,0.2)" stroke-width="1" stroke-dasharray="5,4"/>
+            <rect x="80" y="350" width="960" height="80" rx="8" fill="none" stroke="rgba(255,184,0,0.3)" stroke-width="1.3" stroke-dasharray="8,5"/>
+            <text x="110" y="372" fill="rgba(255,184,0,0.55)" font-size="11" font-weight="700">MVP 子步骤</text>
+            <rect x="110" y="385" width="120" height="34" rx="5" fill="rgba(255,184,0,0.05)" stroke="rgba(255,184,0,0.3)" stroke-width="1"/>
+            <text x="170" y="406" text-anchor="middle" fill="rgba(255,184,0,0.75)" font-size="12" font-weight="600">场景裁剪</text>
+            <line x1="230" y1="402" x2="265" y2="402" stroke="rgba(255,184,0,0.3)" stroke-width="1" marker-end="url(#aAmber)"/>
+            <rect x="265" y="385" width="120" height="34" rx="5" fill="rgba(255,184,0,0.05)" stroke="rgba(255,184,0,0.3)" stroke-width="1"/>
+            <text x="325" y="406" text-anchor="middle" fill="rgba(255,184,0,0.75)" font-size="12" font-weight="600">功能定义</text>
+            <line x1="385" y1="402" x2="420" y2="402" stroke="rgba(255,184,0,0.3)" stroke-width="1" marker-end="url(#aAmber)"/>
+            <rect x="420" y="385" width="140" height="34" rx="5" fill="rgba(255,184,0,0.05)" stroke="rgba(255,184,0,0.3)" stroke-width="1"/>
+            <text x="490" y="406" text-anchor="middle" fill="rgba(255,184,0,0.75)" font-size="12" font-weight="600">指标体系设计</text>
+            <line x1="560" y1="402" x2="595" y2="402" stroke="rgba(255,184,0,0.3)" stroke-width="1" marker-end="url(#aAmber)"/>
+            <rect x="595" y="385" width="140" height="34" rx="5" fill="rgba(255,184,0,0.05)" stroke="rgba(255,184,0,0.3)" stroke-width="1"/>
+            <text x="665" y="406" text-anchor="middle" fill="rgba(255,184,0,0.75)" font-size="12" font-weight="600">技术方案预判</text>
+            <line x1="735" y1="402" x2="770" y2="402" stroke="rgba(255,184,0,0.3)" stroke-width="1" marker-end="url(#aAmber)"/>
+            <rect x="770" y="385" width="120" height="34" rx="5" fill="rgba(255,184,0,0.05)" stroke="rgba(255,184,0,0.3)" stroke-width="1"/>
+            <text x="830" y="406" text-anchor="middle" fill="rgba(255,184,0,0.75)" font-size="12" font-weight="600">排期与资源</text>
+            <!-- Exit to dev -->
+            <line x1="550" y1="430" x2="550" y2="470" stroke="rgba(255,255,255,0.08)" stroke-width="1.2" stroke-dasharray="6,4" marker-end="url(#aGray2)"/>
+            <rect x="460" y="473" width="180" height="38" rx="19" fill="none" stroke="#5a5a6e" stroke-width="1.2"/>
+            <text x="550" y="496" text-anchor="middle" fill="#5a5a6e" font-size="13" font-weight="600">→ 进入开发阶段</text>
+        </svg>
+    </div>
+
+    <!-- ============ STEP 1.1 需求挖掘 ============ -->
+    <div class="step-block" id="need-1">
+        <div class="step-header" onclick="toggleStep('need-1')">
+            <div class="step-num" style="background:var(--amber-low);color:var(--amber);border-color:rgba(255,184,0,0.3);">01</div>
+            <div class="step-info">
+                <h4>1.1 需求挖掘</h4>
+                <p>包含：需求来源收集 → 需求池管理 → 需求评审 → AI适配性判断</p>
+            </div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body">
+            <div class="step-content">
+                <div class="roles-bar">
+                    <span class="roles-label">参与角色：</span>
+                    <span class="role-tag r-lead">📋 产品经理（主R）</span>
+                    <span class="role-tag r-biz">📊 业务方</span>
+                    <span class="role-tag r-ops">📈 运营</span>
+                    <span class="role-tag r-algo">🧠 算法（评审介入）</span>
+                </div>
+
+                <!-- 修改3: 对话顺序调整 — 评审会中PM最后出现 -->
+                <div class="dialog-box">
+                    <div class="dialog-title"><span class="dt-icon"></span> 角色协作模拟 · 需求挖掘阶段</div>
+                    <div class="chat-thread" id="chat-need1">
+                        <div class="chat-note">—— 产品经理同时收集业务方与运营的需求 ——</div>
+                        <div class="chat-msg">
+                            <div class="chat-avatar" style="background:var(--red-low);color:var(--red);border-color:rgba(255,59,92,0.3);">业</div>
+                            <div class="chat-bubble">
+                                <div class="chat-name" style="color:var(--red);">业务方</div>
+                                <div class="chat-text">用户投诉人工客服响应慢，能不能用AI自动处理一部分常见问题？<strong>每天大概3000+咨询量</strong></div>
+                            </div>
+                        </div>
+                        <div class="chat-msg">
+                            <div class="chat-avatar" style="background:rgba(255,158,67,0.1);color:#ff9e43;border-color:rgba(255,158,67,0.3);">运</div>
+                            <div class="chat-bubble">
+                                <div class="chat-name" style="color:#ff9e43;">运营</div>
+                                <div class="chat-text">数据上看，<strong>70%的咨询集中在Top 20个问题</strong>，且都有标准答案，感觉适合AI做</div>
+                            </div>
+                        </div>
+                        <div class="chat-msg">
+                            <div class="chat-avatar" style="background:var(--amber-low);color:var(--amber);border-color:rgba(255,184,0,0.3);">PM</div>
+                            <div class="chat-bubble">
+                                <div class="chat-name" style="color:var(--amber);">产品经理</div>
+                                <div class="chat-text">好，我先把需求结构化录入需求池，初步判断属于<strong>P0优先级</strong>。然后约个评审会</div>
+                            </div>
+                        </div>
+                        <div class="chat-note">—— 需求评审会：产品+算法+业务方 ——</div>
+                        <div class="chat-msg">
+                            <div class="chat-avatar" style="background:var(--purple-low);color:var(--purple);border-color:rgba(191,90,242,0.3);">算</div>
+                            <div class="chat-bubble">
+                                <div class="chat-name" style="color:var(--purple);">算法工程师</div>
+                                <div class="chat-text">这个场景AI适配性高：模式识别问题 + 有标准答案 + 数据量足够。可以先用<strong>大模型API做个POC</strong>，预计3天出结果</div>
+                            </div>
+                        </div>
+                        <div class="chat-msg">
+                            <div class="chat-avatar" style="background:var(--red-low);color:var(--red);border-color:rgba(255,59,92,0.3);">业</div>
+                            <div class="chat-bubble">
+                                <div class="chat-name" style="color:var(--red);">业务方</div>
+                                <div class="chat-text">如果效果不错，我们可以先在VIP客户通道试用，这部分用户容忍度相对高</div>
+                            </div>
+                        </div>
+                        <div class="chat-msg">
+                            <div class="chat-avatar" style="background:var(--amber-low);color:var(--amber);border-color:rgba(255,184,0,0.3);">PM</div>
+                            <div class="chat-bubble">
+                                <div class="chat-name" style="color:var(--amber);">产品经理</div>
+                                <div class="chat-text">评审通过，需求状态更新为「<strong>通过→进入POC</strong>」，@算法 开始POC验证 ✅</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flow-integrated content -->
+                <p style="font-size:14px;color:var(--text);margin-bottom:16px;">在上面的流程图中，<span class="hl-amber">步骤①~③</span> 属于需求挖掘环节，具体每一步的工作内容如下：</p>
+
+                <table class="data-table">
+                    <tr><th>① 需求入池</th><td>所有来源的需求统一汇入需求池。来源包括：用户调研（访谈/问卷/行为分析）、业务方提报、竞品分析、数据洞察、技术驱动。每条需求标准化记录：标题、来源、场景、目标用户、预期价值、优先级。</td></tr>
+                    <tr><th>② 需求评审</th><td>周/双周级评审会，<span class="hl-amber">产品经理</span>主持，<span class="hl-purple">算法工程师</span>和<span style="color:var(--red);font-weight:700;">业务方</span>共同参与。按「<span class="hl">用户价值 × 技术可行性 × 商业回报</span>」三维评估打分，确定P0/P1/P2优先级。</td></tr>
+                    <tr><th>③ AI适配性判断</th><td><span class="hl-purple">算法工程师</span>主导评估：是否具备数据基础？是否属于模式识别/预测/生成类问题？AI相比规则/人工的增量价值有多大？通过→进入POC，不通过→驳回或待定。</td></tr>
+                </table>
+
+                <div class="alert warn">
+                    <span class="alert-icon">⚠️</span>
+                    <div>常见坑：把"可以用AI"和"应该用AI"混淆。如果规则引擎能解决80%的问题，不要硬上模型。</div>
+                </div>
+
+                <div class="sub-block" id="sb-need-pool">
+                    <div class="sub-header" onclick="toggleSub('sb-need-pool')">
+                        <span class="sb-arr">▶</span>
+                        需求池管理详解
+                    </div>
+                    <div class="sub-body">
+                        <table class="data-table">
+                            <tr><th>状态流转</th><td>待评审 → 已评审(通过/驳回/待定) → POC中 → MVP规划中 → 开发中 → 已上线 → 已关闭</td></tr>
+                            <tr><th>管理工具</th><td>飞书多维表格 / Notion / Jira / 自建系统</td></tr>
+                            <tr><th>沉淀复盘</th><td>定期回顾被驳回/搁置需求，技术条件变化后可重新激活</td></tr>
+                        </table>
+                        <div class="alert tip">
+                            <span class="alert-icon">💡</span>
+                            <div>需求池不是"垃圾桶"，要有准入标准和定期清理机制。</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="deliverables">
+                    <h5>📦 交付物</h5>
+                    <div class="deliv-grid">
+                        <div class="deliv-item">
+                            <div class="deliv-icon">📄</div>
+                            <div class="deliv-text">需求文档<small>含场景描述、用户故事、预期指标</small></div>
+                        </div>
+                        <div class="deliv-item">
+                            <div class="deliv-icon">📊</div>
+                            <div class="deliv-text">AI适配性评估表<small>技术可行性+数据基础+价值评估</small></div>
+                        </div>
+                        <div class="deliv-item">
+                            <div class="deliv-icon">📋</div>
+                            <div class="deliv-text">需求池看板<small>全量需求状态的可视化管理</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ STEP 1.2 POC验证 ============ -->
+    <div class="step-block" id="need-2">
+        <div class="step-header" onclick="toggleStep('need-2')">
+            <div class="step-num" style="background:var(--amber-low);color:var(--amber);border-color:rgba(255,184,0,0.3);">02</div>
+            <div class="step-info">
+                <h4>1.2 POC验证（概念验证）</h4>
+                <p>用最低成本验证AI能不能解决这个问题，对应流程图中的步骤④⑤和Go/Pivot/Kill决策点</p>
+            </div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body">
+            <div class="step-content">
+                <div class="roles-bar">
+                    <span class="roles-label">参与角色：</span>
+                    <span class="role-tag r-lead">🧠 算法工程师（主R）</span>
+                    <span class="role-tag r-pm">📋 产品经理</span>
+                    <span class="role-tag r-data">📊 数据工程师</span>
+                </div>
+
+                <div class="dialog-box">
+                    <div class="dialog-title"><span class="dt-icon"></span> 角色协作模拟 · POC验证阶段</div>
+                    <div class="chat-thread">
+                        <div class="chat-msg">
+                            <div class="chat-avatar" style="background:var(--purple-low);color:var(--purple);border-color:rgba(191,90,242,0.3);">算</div>
+                            <div class="chat-bubble">
+                                <div class="chat-name" style="color:var(--purple);">算法工程师</div>
+                                <div class="chat-text">我用GPT-4 API + 100条真实客服数据跑了测试，<strong>准确率达到87%</strong>，超过了85%的Go线</div>
+                            </div>
+                        </div>
+                        <div class="chat-msg">
+                            <div class="chat-avatar" style="background:var(--neon-vlow);color:var(--neon);border-color:rgba(0,255,136,0.3);">数</div>
+                            <div class="chat-bubble">
+                                <div class="chat-name" style="color:var(--neon);">数据工程师</div>
+                                <div class="chat-text">历史数据有<strong>5万条已标注的客服对话</strong>，可以支撑微调，数据质量我初步看了还不错</div>
+                            </div>
+                        </div>
+                        <div class="chat-msg">
+                            <div class="chat-avatar" style="background:var(--amber-low);color:var(--amber);border-color:rgba(255,184,0,0.3);">PM</div>
+                            <div class="chat-bubble">
+                                <div class="chat-name" style="color:var(--amber);">产品经理</div>
+                                <div class="chat-text">效果达标，成本可控。决策：<strong style="color:#00ff88;">GO! 进入MVP规划</strong>，第一版先覆盖Top 20高频问题</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="font-size:14px;color:var(--text);margin-bottom:16px;">流程图中<span class="hl-amber">步骤④⑤</span>构成POC验证的核心工作，菱形决策点决定项目命运：</p>
+
+                <table class="data-table">
+                    <tr><th>④ 快速原型</th><td><span class="hl-purple">算法工程师</span>在3-5天内用小样本数据+商业API/开源模型搭建Demo。形态：Notebook/Gradio界面。<strong>不做工程化</strong>，只看效果天花板。</td></tr>
+                    <tr><th>⑤ POC测试</th><td>在测试集上跑核心指标，与现有方案对比，探测边界case和异常表现，粗估推理延时和调用成本。</td></tr>
+                    <tr><th>🔷 决策标准</th><td>提前定义量化阈值，如「准确率>85% 且 延时<500ms → <span class="hl-green">Go</span>」。达标→MVP规划；差距大→<span class="hl-amber">Pivot</span>换方案；证伪→<span style="color:var(--red);font-weight:700;">Kill</span>放弃。</td></tr>
+                </table>
+
+                <div class="alert tip">
+                    <span class="alert-icon">💡</span>
+                    <div>POC阶段建议控制在 <strong>1-2周</strong> 内完成，避免过度投入。</div>
+                </div>
+
+                <div class="deliverables">
+                    <h5>📦 交付物</h5>
+                    <div class="deliv-grid">
+                        <div class="deliv-item">
+                            <div class="deliv-icon">🖥️</div>
+                            <div class="deliv-text">POC原型Demo<small>可运行的最小验证原型</small></div>
+                        </div>
+                        <div class="deliv-item">
+                            <div class="deliv-icon">📈</div>
+                            <div class="deliv-text">POC评估报告<small>效果指标+风险评估+资源预估</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ STEP 1.3 MVP规划 ============ -->
+    <div class="step-block" id="need-3">
+        <div class="step-header" onclick="toggleStep('need-3')">
+            <div class="step-num" style="background:var(--amber-low);color:var(--amber);border-color:rgba(255,184,0,0.3);">03</div>
+            <div class="step-info">
+                <h4>1.3 MVP规划（最小可行产品）</h4>
+                <p>对应流程图中的步骤⑥及其下方的子流程，裁剪出最核心的第一版</p>
+            </div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body">
+            <div class="step-content">
+                <div class="roles-bar">
+                    <span class="roles-label">参与角色：</span>
+                    <span class="role-tag r-lead">📋 产品经理（主R）</span>
+                    <span class="role-tag r-algo">🧠 算法工程师</span>
+                    <span class="role-tag r-be">⚙️ 后端开发</span>
+                    <span class="role-tag r-biz">📊 业务方</span>
+                </div>
+
+                <p style="font-size:14px;color:var(--text);margin-bottom:16px;">流程图底部的5个子节点，就是MVP规划的核心步骤：</p>
+
+                <table class="data-table">
+                    <tr><th>场景裁剪</th><td>从完整需求中选出 <span class="hl">最核心的1-2个场景</span> 作为第一版</td></tr>
+                    <tr><th>功能定义</th><td>明确MVP包含什么、<span class="hl">不包含什么</span>；定义用户交互流程</td></tr>
+                    <tr><th>指标体系设计</th><td>业务指标（转化率/效率提升）+ AI指标（准确率/延时）+ 体验指标（NPS/满意度）</td></tr>
+                    <tr><th>技术方案预判</th><td>自研 vs 调用API vs 开源微调？端侧 vs 云侧？ <span class="hl-purple">算法</span>和<span class="hl-cyan">后端</span>共同评估</td></tr>
+                    <tr><th>排期与资源</th><td>人力（算法/工程/产品/标注）、算力、数据资源、里程碑节点</td></tr>
+                </table>
+
+                <div class="deliverables">
+                    <h5>📦 交付物</h5>
+                    <div class="deliv-grid">
+                        <div class="deliv-item">
+                            <div class="deliv-icon">📝</div>
+                            <div class="deliv-text">MVP PRD<small>功能范围+交互原型+指标定义</small></div>
+                        </div>
+                        <div class="deliv-item">
+                            <div class="deliv-icon">📅</div>
+                            <div class="deliv-text">项目计划表<small>里程碑+排期+资源分配</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</section>
+
+<!-- Section Connector -->
+<div class="section-connector"><div class="connector-line"></div></div>
+
+<!-- ============================================================ -->
+<!--                     开发阶段                                   -->
+<!-- ============================================================ -->
+<section class="phase-section" id="dev">
+<div class="container">
+    <div class="phase-header">
+        <div class="phase-label" style="color:var(--blue);">
+            <span class="label-line" style="background:var(--blue);"></span> PHASE 02 · 开发阶段
+        </div>
+        <div class="phase-title">🔵 工程化落地，达到可上线标准</div>
+        <div class="phase-desc">从数据治理到预上线验证，多角色密切协同，将验证过的想法变成可靠的线上产品</div>
+    </div>
+
+    <!-- Dev SVG Flow — 修改5: 删除🆕 -->
+    <div class="flow-box">
+        <h3><span class="h3-dot" style="background:var(--blue);box-shadow:0 0 6px var(--blue);"></span> 开发阶段流程图</h3>
+        <svg class="flow-svg" viewBox="0 0 1000 190" width="100%" height="190" style="min-width:900px;">
+            <defs>
+                <marker id="aBl" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#3b82f6"/></marker>
+                <marker id="aG3" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#5a5a6e"/></marker>
+                <marker id="aOr2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#ff9e43"/></marker>
+            </defs>
+            <rect x="10" y="25" width="86" height="36" rx="18" fill="none" stroke="#5a5a6e" stroke-width="1.2"/>
+            <text x="53" y="47" text-anchor="middle" fill="#5a5a6e" font-size="11" font-weight="600">MVP完成</text>
+            <line x1="96" y1="43" x2="120" y2="43" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#aBl)"/>
+            <rect x="120" y="25" width="100" height="36" rx="6" fill="rgba(59,130,246,0.06)" stroke="#3b82f6" stroke-width="1.2"/>
+            <text x="170" y="47" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="700">① 数据治理</text>
+            <line x1="220" y1="43" x2="244" y2="43" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#aBl)"/>
+            <rect x="244" y="25" width="100" height="36" rx="6" fill="rgba(59,130,246,0.06)" stroke="#3b82f6" stroke-width="1.2"/>
+            <text x="294" y="47" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="700">② 模型选型</text>
+            <line x1="344" y1="43" x2="368" y2="43" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#aBl)"/>
+            <rect x="368" y="25" width="100" height="36" rx="6" fill="rgba(59,130,246,0.06)" stroke="#3b82f6" stroke-width="1.2"/>
+            <text x="418" y="47" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="700">③ 模型训练</text>
+            <line x1="468" y1="43" x2="492" y2="43" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#aBl)"/>
+            <rect x="492" y="25" width="100" height="36" rx="6" fill="rgba(59,130,246,0.06)" stroke="#3b82f6" stroke-width="1.2"/>
+            <text x="542" y="47" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="700">④ 模型评估</text>
+            <path d="M542,61 L542,75 L418,75 L418,61" fill="none" stroke="#ff9e43" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#aOr2)"/>
+            <text x="480" y="87" text-anchor="middle" fill="#ff9e43" font-size="10" font-weight="600">迭代优化</text>
+            <line x1="542" y1="61" x2="542" y2="105" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#aBl)"/>
+            <rect x="492" y="105" width="100" height="36" rx="6" fill="rgba(59,130,246,0.06)" stroke="#3b82f6" stroke-width="1.2"/>
+            <text x="542" y="127" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="700">⑤ 产品实现</text>
+            <line x1="592" y1="123" x2="620" y2="123" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#aBl)"/>
+            <rect x="620" y="105" width="100" height="36" rx="6" fill="rgba(59,130,246,0.06)" stroke="#3b82f6" stroke-width="1.2"/>
+            <text x="670" y="127" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="700">⑥ 测试验证</text>
+            <line x1="720" y1="123" x2="748" y2="123" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#aBl)"/>
+            <rect x="748" y="105" width="90" height="36" rx="6" fill="rgba(59,130,246,0.06)" stroke="#3b82f6" stroke-width="1.2"/>
+            <text x="793" y="127" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="700">⑦ A/B测试</text>
+            <line x1="838" y1="123" x2="866" y2="123" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#aBl)"/>
+            <rect x="866" y="105" width="110" height="36" rx="6" fill="rgba(59,130,246,0.1)" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="921" y="127" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="800">⑧ 预上线</text>
+            <line x1="921" y1="141" x2="921" y2="168" stroke="#5a5a6e" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#aG3)"/>
+            <text x="921" y="183" text-anchor="middle" fill="#5a5a6e" font-size="11" font-weight="600">→ 运营阶段</text>
+        </svg>
+    </div>
+
+    <!-- DEV steps -->
+
+    <div class="step-block" id="dev-1">
+        <div class="step-header" onclick="toggleStep('dev-1')">
+            <div class="step-num" style="background:var(--blue-low);color:var(--blue);border-color:rgba(59,130,246,0.3);">01</div>
+            <div class="step-info">
+                <h4>2.1 数据治理</h4>
+                <p>对应流程图步骤①，AI项目60-80%的工作量在这里</p>
+            </div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body"><div class="step-content">
+            <div class="roles-bar">
+                <span class="roles-label">参与角色：</span>
+                <span class="role-tag r-lead">📊 数据工程师（主R）</span>
+                <span class="role-tag r-algo">🧠 算法</span>
+                <span class="role-tag r-pm">📋 产品（标注方案审核）</span>
+            </div>
+            <div class="mini-flow">
+                <div class="mf-node mf-blue">数据采集</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-blue">数据清洗</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-blue">数据标注</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-blue">数据集划分</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-blue">版本管理</div>
+            </div>
+            <table class="data-table">
+                <tr><th>数据采集</th><td>确定来源（业务日志/爬虫/第三方采购/合成数据）；确保合规（隐私/版权）</td></tr>
+                <tr><th>数据清洗</th><td>去重、去噪、缺失值处理、异常值检测、格式统一</td></tr>
+                <tr><th>数据标注</th><td>方案设计→指南编写→团队执行→质检（交叉验证/抽检）。<span class="hl-amber">产品经理</span>参与审核标注方案确保业务语义准确</td></tr>
+                <tr><th>数据集划分</th><td>训练集/验证集/测试集（注意分布一致性、防数据泄漏）</td></tr>
+                <tr><th>版本管理</th><td>数据血缘追踪、版本化管理（DVC等工具）</td></tr>
+            </table>
+            <div class="alert warn">
+                <span class="alert-icon">⚠️</span>
+                <div>数据治理往往占整个AI项目 <strong>60-80%</strong> 的工作量，切勿低估。</div>
+            </div>
+            <div class="deliverables">
+                <h5>📦 交付物</h5>
+                <div class="deliv-grid">
+                    <div class="deliv-item"><div class="deliv-icon">🗃️</div><div class="deliv-text">数据集<small>含质量报告和分布统计</small></div></div>
+                    <div class="deliv-item"><div class="deliv-icon">📖</div><div class="deliv-text">标注规范<small>标注指南+质检报告</small></div></div>
+                    <div class="deliv-item"><div class="deliv-icon">📊</div><div class="deliv-text">数据治理报告<small>数据源/清洗/版本全记录</small></div></div>
+                </div>
+            </div>
+        </div></div>
+    </div>
+
+    <div class="step-block" id="dev-2">
+        <div class="step-header" onclick="toggleStep('dev-2')">
+            <div class="step-num" style="background:var(--blue-low);color:var(--blue);border-color:rgba(59,130,246,0.3);">02</div>
+            <div class="step-info">
+                <h4>2.2 模型选型 & 资源评估</h4>
+                <p>对应流程图步骤②，选择最适合的技术路线</p>
+            </div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body"><div class="step-content">
+            <div class="roles-bar">
+                <span class="roles-label">参与角色：</span>
+                <span class="role-tag r-lead">🧠 算法工程师（主R）</span>
+                <span class="role-tag r-be">⚙️ 后端（部署评估）</span>
+                <span class="role-tag r-pm">📋 产品（成本审核）</span>
+            </div>
+            <table class="data-table">
+                <tr><th>技术路线</th><td>传统ML vs 深度学习 vs 大模型(LLM) vs 多模态</td></tr>
+                <tr><th>模型候选</th><td>开源（HuggingFace） vs 商业API（GPT/Claude/文心）vs 自研</td></tr>
+                <tr><th>评估维度</th><td>效果上限、推理延时、部署成本、可解释性、隐私要求、团队技术栈</td></tr>
+                <tr><th>Baseline</th><td>先跑简单基线（规则/小模型），作为效果对比锚点</td></tr>
+            </table>
+            <div class="sub-block" id="sb-resource">
+                <div class="sub-header" onclick="toggleSub('sb-resource')">
+                    <span class="sb-arr">▶</span> 计算资源评估
+                </div>
+                <div class="sub-body">
+                    <table class="data-table">
+                        <tr><th>训练资源</th><td>参数量vs显存（7B全量≈2×A100 80G），LoRA/QLoRA可大幅降低</td></tr>
+                        <tr><th>推理资源</th><td>延时要求→GPU等级，预估QPS→实例数，批处理vs实时</td></tr>
+                        <tr><th>成本测算</th><td>云GPU+API调用+自建对比 → 年化总成本</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="deliverables">
+                <h5>📦 交付物</h5>
+                <div class="deliv-grid">
+                    <div class="deliv-item"><div class="deliv-icon">📋</div><div class="deliv-text">选型评估报告<small>含横向对比实验数据</small></div></div>
+                    <div class="deliv-item"><div class="deliv-icon">💰</div><div class="deliv-text">资源评估表<small>训练+推理成本测算</small></div></div>
+                </div>
+            </div>
+        </div></div>
+    </div>
+
+    <div class="step-block" id="dev-3">
+        <div class="step-header" onclick="toggleStep('dev-3')">
+            <div class="step-num" style="background:var(--blue-low);color:var(--blue);border-color:rgba(59,130,246,0.3);">03</div>
+            <div class="step-info">
+                <h4>2.3 模型开发与训练</h4>
+                <p>对应流程图步骤③和迭代循环箭头，多轮优化直到达标</p>
+            </div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body"><div class="step-content">
+            <div class="roles-bar">
+                <span class="roles-label">参与角色：</span>
+                <span class="role-tag r-lead">🧠 算法工程师（主R）</span>
+                <span class="role-tag r-data">📊 数据工程师</span>
+            </div>
+            <p style="font-size:14px;color:var(--text);margin-bottom:12px;">流程图中步骤③→④之间的<span style="color:#ff9e43;font-weight:700;">橙色虚线循环箭头</span>，就是模型的多轮迭代优化过程：</p>
+            <table class="data-table">
+                <tr><th>模型训练</th><td>特征工程 / Prompt Engineering / Fine-tuning / RLHF</td></tr>
+                <tr><th>超参调优</th><td>学习率、batch size、训练轮次；Grid Search / Bayesian Optimization</td></tr>
+                <tr><th>实验管理</th><td>MLflow/W&B追踪，模型+代码+数据三位一体版本管理</td></tr>
+                <tr><th>模型压缩</th><td>量化、蒸馏、剪枝（端侧部署或降低推理成本）</td></tr>
+                <tr><th>迭代节奏</th><td>最大5-8轮，单轮提升<0.5%则停止。每轮：分析问题→假设→调整→训练→评估</td></tr>
+            </table>
+            <div class="deliverables">
+                <h5>📦 交付物</h5>
+                <div class="deliv-grid">
+                    <div class="deliv-item"><div class="deliv-icon">🤖</div><div class="deliv-text">训练好的模型<small>含checkpoint和配置文件</small></div></div>
+                    <div class="deliv-item"><div class="deliv-icon">📓</div><div class="deliv-text">训练日志档案<small>Loss曲线+超参+实验记录</small></div></div>
+                    <div class="deliv-item"><div class="deliv-icon">🔄</div><div class="deliv-text">迭代优化记录<small>每轮假设+结果+下一步</small></div></div>
+                </div>
+            </div>
+        </div></div>
+    </div>
+
+    <!-- 修改5: 删除所有🆕和NEW tag -->
+    <div class="step-block" id="dev-4">
+        <div class="step-header" onclick="toggleStep('dev-4')">
+            <div class="step-num" style="background:var(--blue-low);color:var(--blue);border-color:rgba(59,130,246,0.3);">04</div>
+            <div class="step-info">
+                <h4>2.4 模型评估</h4>
+                <p>对应流程图步骤④，全面评估效果、鲁棒性、可解释性和成本</p>
+            </div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body"><div class="step-content">
+            <div class="roles-bar">
+                <span class="roles-label">参与角色：</span>
+                <span class="role-tag r-lead">🧠 算法工程师（主R）</span>
+                <span class="role-tag r-pm">📋 产品（业务评估）</span>
+                <span class="role-tag r-test">🧪 测试</span>
+            </div>
+            <div class="mini-flow">
+                <div class="mf-node mf-blue">离线评估</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-blue">人工评估</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-blue">Bad Case</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-cyan">鲁棒性</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-purple">可解释性</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-amber">成本分析</div>
+            </div>
+            <table class="data-table">
+                <tr><th>离线评估</th><td>Accuracy/Precision/Recall/F1/BLEU/ROUGE等指标</td></tr>
+                <tr><th>人工评估</th><td>抽样评测（尤其生成类），建立评测标准</td></tr>
+                <tr><th>Bad Case</th><td>系统化收集分类，归因（数据/模型/标注）</td></tr>
+                <tr><th>鲁棒性</th><td>对抗样本、OOD测试、边界条件、一致性、公平性</td></tr>
+                <tr><th>可解释性</th><td>SHAP/LIME特征重要性、Attention可视化、CoT追溯</td></tr>
+                <tr><th>成本分析</th><td>单次推理成本 → 规模化预估 → 成本vs效果曲线</td></tr>
+            </table>
+            <div class="deliverables">
+                <h5>📦 交付物</h5>
+                <div class="deliv-grid">
+                    <div class="deliv-item"><div class="deliv-icon">📈</div><div class="deliv-text">模型评估报告<small>指标数据+Bad Case集</small></div></div>
+                    <div class="deliv-item"><div class="deliv-icon">🛡️</div><div class="deliv-text">鲁棒性报告<small>对抗/边界/公平性测试</small></div></div>
+                    <div class="deliv-item"><div class="deliv-icon">💰</div><div class="deliv-text">成本分析报告<small>规模化成本预估和优化建议</small></div></div>
+                </div>
+            </div>
+        </div></div>
+    </div>
+
+    <div class="step-block" id="dev-5">
+        <div class="step-header" onclick="toggleStep('dev-5')">
+            <div class="step-num" style="background:var(--blue-low);color:var(--blue);border-color:rgba(59,130,246,0.3);">05</div>
+            <div class="step-info">
+                <h4>2.5 产品实现（工程化）</h4>
+                <p>对应流程图步骤⑤，后端+前端+模型集成+MVP构建，四大模块协同</p>
+            </div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body"><div class="step-content">
+            <div class="roles-bar">
+                <span class="roles-label">参与角色：</span>
+                <span class="role-tag r-lead">⚙️ 后端开发（主R）</span>
+                <span class="role-tag r-fe">🎨 前端</span>
+                <span class="role-tag r-algo">🧠 算法（模型集成）</span>
+                <span class="role-tag r-pm">📋 产品（验收）</span>
+            </div>
+            <div class="dialog-box">
+                <div class="dialog-title"><span class="dt-icon" style="background:var(--blue);box-shadow:0 0 6px var(--blue);"></span> 角色协作模拟 · 产品实现阶段（四方并行）</div>
+                <div class="chat-thread">
+                    <div class="chat-note">—— 四个模块并行开发，每日站会对齐进度 ——</div>
+                    <div class="chat-msg">
+                        <div class="chat-avatar" style="background:var(--blue-low);color:var(--blue);border-color:rgba(59,130,246,0.3);">后</div>
+                        <div class="chat-bubble"><div class="chat-name" style="color:var(--blue);">后端开发</div><div class="chat-text">API接口设计完成，已发Swagger文档。<strong>限流/熔断/降级策略</strong>也已配置好。@前端 可以开始联调了</div></div>
+                    </div>
+                    <div class="chat-msg">
+                        <div class="chat-avatar" style="background:var(--cyan-low);color:var(--cyan);border-color:rgba(0,229,255,0.3);">前</div>
+                        <div class="chat-bubble"><div class="chat-name" style="color:var(--cyan);">前端开发</div><div class="chat-text">收到，<strong>流式输出+打字机效果</strong>已实现，用户反馈组件（👍👎）也OK了。@算法 模型推理接口什么时候Ready？</div></div>
+                    </div>
+                    <div class="chat-msg">
+                        <div class="chat-avatar" style="background:var(--purple-low);color:var(--purple);border-color:rgba(191,90,242,0.3);">算</div>
+                        <div class="chat-bubble"><div class="chat-name" style="color:var(--purple);">算法工程师</div><div class="chat-text">模型已用vLLM服务化部署，推理API Ready。<strong>P95延时320ms</strong>，符合要求。降级方案：模型不可用时走规则引擎兜底</div></div>
+                    </div>
+                    <div class="chat-msg">
+                        <div class="chat-avatar" style="background:var(--amber-low);color:var(--amber);border-color:rgba(255,184,0,0.3);">PM</div>
+                        <div class="chat-bubble"><div class="chat-name" style="color:var(--amber);">产品经理</div><div class="chat-text">全链路走通了✅ 用户输入→后端→模型→结果→前端，端到端OK。<strong>进入测试阶段</strong></div></div>
+                    </div>
+                </div>
+            </div>
+            <p style="font-size:14px;color:var(--text);margin-bottom:12px;">四大模块并行开发，最终在MVP构建环节进行系统集成：</p>
+            <table class="data-table">
+                <tr><th>⚙️ 后端开发</th><td>架构设计、API开发、业务逻辑层、安全护栏（输入校验/输出审核/限流熔断）、日志与可观测性</td></tr>
+                <tr><th>🎨 前端开发</th><td>UI实现、AI交互体验（流式输出/置信度标识/人工兜底入口/反馈组件）、埋点</td></tr>
+                <tr><th>🤖 模型集成</th><td>模型服务化（vLLM/TGI/Triton）、推理API封装、容器化部署、降级兜底策略</td></tr>
+                <tr><th>🔗 系统集成</th><td>前后端联调 → 模型服务联调 → 端到端验证 → 环境搭建（开发/测试/预发布）</td></tr>
+            </table>
+            <div class="deliverables">
+                <h5>📦 交付物</h5>
+                <div class="deliv-grid">
+                    <div class="deliv-item"><div class="deliv-icon">🖥️</div><div class="deliv-text">可运行的MVP系统<small>前后端+模型服务完整集成</small></div></div>
+                    <div class="deliv-item"><div class="deliv-icon">📘</div><div class="deliv-text">技术架构文档<small>系统设计+接口文档</small></div></div>
+                    <div class="deliv-item"><div class="deliv-icon">🔧</div><div class="deliv-text">部署运维文档<small>部署手册+配置说明</small></div></div>
+                </div>
+            </div>
+        </div></div>
+    </div>
+
+    <div class="step-block" id="dev-6">
+        <div class="step-header" onclick="toggleStep('dev-6')">
+            <div class="step-num" style="background:var(--blue-low);color:var(--blue);border-color:rgba(59,130,246,0.3);">06</div>
+            <div class="step-info"><h4>2.6 测试验证</h4><p>对应流程图步骤⑥，功能+AI专项+性能+安全+UAT</p></div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body"><div class="step-content">
+            <div class="roles-bar"><span class="roles-label">参与角色：</span><span class="role-tag r-lead">🧪 测试工程师（主R）</span><span class="role-tag r-algo">🧠 算法（AI专项）</span><span class="role-tag r-pm">📋 产品（UAT）</span></div>
+            <table class="data-table">
+                <tr><th>功能测试</th><td>常规功能、边界条件、异常输入处理</td></tr>
+                <tr><th>AI专项</th><td>效果回归、一致性、公平性/偏见、鲁棒性（对抗样本）</td></tr>
+                <tr><th>性能测试</th><td>并发、延时P50/P95/P99、吞吐量、资源占用</td></tr>
+                <tr><th>安全测试</th><td>Prompt注入防护、数据泄露检测、越权测试</td></tr>
+                <tr><th>UAT</th><td>真实用户/业务方小范围试用收集反馈</td></tr>
+            </table>
+            <div class="deliverables"><h5>📦 交付物</h5><div class="deliv-grid"><div class="deliv-item"><div class="deliv-icon">✅</div><div class="deliv-text">测试报告<small>通过标准+遗留问题清单</small></div></div></div></div>
+        </div></div>
+    </div>
+
+    <div class="step-block" id="dev-7">
+        <div class="step-header" onclick="toggleStep('dev-7')">
+            <div class="step-num" style="background:var(--blue-low);color:var(--blue);border-color:rgba(59,130,246,0.3);">07</div>
+            <div class="step-info"><h4>2.7 A/B测试</h4><p>对应流程图步骤⑦，小流量实验验证，数据驱动决策</p></div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body"><div class="step-content">
+            <div class="roles-bar"><span class="roles-label">参与角色：</span><span class="role-tag r-lead">📋 产品经理（主R）</span><span class="role-tag r-algo">🧠 算法</span><span class="role-tag r-data">📊 数据分析师</span></div>
+            <table class="data-table">
+                <tr><th>实验设计</th><td>实验组/对照组，流量5%-10%起步，用户ID哈希分流</td></tr>
+                <tr><th>指标设定</th><td>核心指标 + 护栏指标（防止顾此失彼）</td></tr>
+                <tr><th>统计显著性</th><td>样本量、实验周期、置信度要求（p<0.05）</td></tr>
+                <tr><th>决策规则</th><td>提前定义：全量上线 / 继续优化 / 回滚</td></tr>
+            </table>
+            <div class="deliverables"><h5>📦 交付物</h5><div class="deliv-grid"><div class="deliv-item"><div class="deliv-icon">🔬</div><div class="deliv-text">A/B测试报告<small>统计分析+上线建议</small></div></div></div></div>
+        </div></div>
+    </div>
+
+    <!-- 修改4: checklist彩蛋 + 修改5: 删除NEW tag -->
+    <div class="step-block" id="dev-8">
+        <div class="step-header" onclick="toggleStep('dev-8')">
+            <div class="step-num" style="background:var(--blue-low);color:var(--blue);border-color:rgba(59,130,246,0.3);">08</div>
+            <div class="step-info">
+                <h4>2.8 预上线验证</h4>
+                <p>对应流程图步骤⑧，上线前的最终检查和准备</p>
+            </div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body"><div class="step-content">
+            <div class="roles-bar">
+                <span class="roles-label">参与角色：</span>
+                <span class="role-tag r-lead">📈 运维（主R）</span>
+                <span class="role-tag r-pm">📋 产品</span>
+                <span class="role-tag r-be">⚙️ 后端</span>
+                <span class="role-tag r-algo">🧠 算法</span>
+                <span class="role-tag r-test">🧪 测试</span>
+            </div>
+            <div class="mini-flow">
+                <div class="mf-node mf-blue">预发布验证</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-blue">Checklist核验</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-blue">回滚演练</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-blue">相关方知会</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-go">✅ 上线审批</div>
+            </div>
+            <table class="data-table">
+                <tr><th>预发布环境</th><td>与生产完全一致的环境中做全量回归测试</td></tr>
+                <tr><th>监控预配</th><td>监控大盘就位、告警规则配置、on-call人员安排</td></tr>
+                <tr><th>回滚演练</th><td>实际演练回滚流程，确保N分钟内可回滚</td></tr>
+                <tr><th>知会</th><td>通知业务方、客服、运营上线时间和影响</td></tr>
+            </table>
+            <div class="checklist-area">
+                <h4 style="color:var(--text-bright);margin:20px 0 12px;font-size:14px;">📋 上线 CHECKLIST</h4>
+                <div class="checklist-tip" id="checklistTip">💡 如果已经check过了，可以把小框勾上</div>
+                <ul class="checklist" id="launchChecklist">
+                    <li onclick="toggleCheck(this)"><div class="chk-box">✓</div><span>所有测试用例通过</span></li>
+                    <li onclick="toggleCheck(this)"><div class="chk-box">✓</div><span>AI模型效果指标达标</span></li>
+                    <li onclick="toggleCheck(this)"><div class="chk-box">✓</div><span>性能压测通过（延时/QPS）</span></li>
+                    <li onclick="toggleCheck(this)"><div class="chk-box">✓</div><span>安全测试通过</span></li>
+                    <li onclick="toggleCheck(this)"><div class="chk-box">✓</div><span>监控大盘与告警已配置</span></li>
+                    <li onclick="toggleCheck(this)"><div class="chk-box">✓</div><span>回滚方案已验证</span></li>
+                    <li onclick="toggleCheck(this)"><div class="chk-box">✓</div><span>降级兜底策略已验证</span></li>
+                    <li onclick="toggleCheck(this)"><div class="chk-box">✓</div><span>数据埋点验证通过</span></li>
+                    <li onclick="toggleCheck(this)"><div class="chk-box">✓</div><span>相关方已知会</span></li>
+                    <li onclick="toggleCheck(this)"><div class="chk-box">✓</div><span>值班人员已安排</span></li>
+                </ul>
+            </div>
+            <div class="deliverables">
+                <h5>📦 交付物</h5>
+                <div class="deliv-grid">
+                    <div class="deliv-item"><div class="deliv-icon">📋</div><div class="deliv-text">预上线验证报告<small>全量回归+配置核验</small></div></div>
+                    <div class="deliv-item"><div class="deliv-icon">✍️</div><div class="deliv-text">上线审批签字<small>各方确认，正式批准上线</small></div></div>
+                </div>
+            </div>
+        </div></div>
+    </div>
+
+</div>
+</section>
+
+<!-- Section Connector -->
+<div class="section-connector"><div class="connector-line" style="background:linear-gradient(180deg,var(--blue),var(--neon));"></div></div>
+
+<!-- ============================================================ -->
+<!--                     运营阶段 — 修改5: 删除🆕                   -->
+<!-- ============================================================ -->
+<section class="phase-section" id="ops">
+<div class="container">
+    <div class="phase-header">
+        <div class="phase-label" style="color:var(--neon);">
+            <span class="label-line" style="background:var(--neon);"></span> PHASE 03 · 运营阶段
+        </div>
+        <div class="phase-title">🟢 持续保障稳定性与商业价值</div>
+        <div class="phase-desc">灰度发布上线后，通过监控、数据回流、持续迭代让产品越用越好，最终实现商业化</div>
+    </div>
+
+    <div class="flow-box">
+        <h3><span class="h3-dot"></span> 运营阶段流程图</h3>
+        <svg class="flow-svg" viewBox="0 0 900 130" width="100%" height="130" style="min-width:800px;">
+            <defs>
+                <marker id="aNn" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#00ff88"/></marker>
+                <marker id="aG4" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#5a5a6e"/></marker>
+                <marker id="aOr3" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#ff9e43"/></marker>
+            </defs>
+            <rect x="10" y="25" width="86" height="36" rx="18" fill="none" stroke="#5a5a6e" stroke-width="1.2"/>
+            <text x="53" y="47" text-anchor="middle" fill="#5a5a6e" font-size="11" font-weight="600">预上线OK</text>
+            <line x1="96" y1="43" x2="124" y2="43" stroke="#00ff88" stroke-width="1.2" marker-end="url(#aNn)"/>
+            <rect x="124" y="25" width="120" height="36" rx="6" fill="rgba(0,255,136,0.06)" stroke="#00ff88" stroke-width="1.2"/>
+            <text x="184" y="40" text-anchor="middle" fill="#00ff88" font-size="12" font-weight="700">① 灰度发布</text>
+            <text x="184" y="53" text-anchor="middle" fill="rgba(0,255,136,0.5)" font-size="9">10%→30%→100%</text>
+            <line x1="244" y1="43" x2="272" y2="43" stroke="#00ff88" stroke-width="1.2" marker-end="url(#aNn)"/>
+            <rect x="272" y="25" width="100" height="36" rx="6" fill="rgba(0,255,136,0.06)" stroke="#00ff88" stroke-width="1.2"/>
+            <text x="322" y="47" text-anchor="middle" fill="#00ff88" font-size="12" font-weight="700">② 监控体系</text>
+            <line x1="372" y1="43" x2="400" y2="43" stroke="#00ff88" stroke-width="1.2" marker-end="url(#aNn)"/>
+            <rect x="400" y="25" width="110" height="36" rx="6" fill="rgba(0,255,136,0.1)" stroke="#00ff88" stroke-width="1.5"/>
+            <text x="455" y="47" text-anchor="middle" fill="#00ff88" font-size="12" font-weight="800">③ 数据回流</text>
+            <line x1="510" y1="43" x2="538" y2="43" stroke="#00ff88" stroke-width="1.2" marker-end="url(#aNn)"/>
+            <rect x="538" y="25" width="100" height="36" rx="6" fill="rgba(0,255,136,0.06)" stroke="#00ff88" stroke-width="1.2"/>
+            <text x="588" y="47" text-anchor="middle" fill="#00ff88" font-size="12" font-weight="700">④ 持续迭代</text>
+            <line x1="638" y1="43" x2="666" y2="43" stroke="#00ff88" stroke-width="1.2" marker-end="url(#aNn)"/>
+            <rect x="666" y="25" width="100" height="36" rx="6" fill="rgba(0,255,136,0.06)" stroke="#00ff88" stroke-width="1.2"/>
+            <text x="716" y="47" text-anchor="middle" fill="#00ff88" font-size="12" font-weight="700">⑤ 商业化</text>
+            <path d="M588,61 L588,90 L184,90 L184,61" fill="none" stroke="#ff9e43" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#aOr3)"/>
+            <text x="386" y="87" text-anchor="middle" fill="#ff9e43" font-size="10" font-weight="700">🔄 数据飞轮 · 持续循环</text>
+        </svg>
+    </div>
+
+    <div class="step-block" id="ops-1">
+        <div class="step-header" onclick="toggleStep('ops-1')">
+            <div class="step-num" style="background:var(--neon-vlow);color:var(--neon);border-color:rgba(0,255,136,0.3);">01</div>
+            <div class="step-info"><h4>3.1 全量上线与监控</h4><p>对应流程图步骤①②③，灰度发布 → 多维监控 → 数据回流</p></div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body"><div class="step-content">
+            <div class="roles-bar"><span class="roles-label">参与角色：</span><span class="role-tag r-lead">📈 运维（主R-发布）</span><span class="role-tag r-algo">🧠 算法（模型监控）</span><span class="role-tag r-data">📊 数据（数据回流）</span><span class="role-tag r-pm">📋 产品（业务监控）</span></div>
+            <div class="mini-flow">
+                <div class="mf-node mf-neon">10%灰度</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-amber">观察</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-neon">30%</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-amber">观察</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-neon">50%</div><div class="mf-arrow">→</div>
+                <div class="mf-node mf-go">100%全量</div>
+            </div>
+            <table class="data-table">
+                <tr><th>① 灰度发布</th><td>分批放量，每阶段观察指标。异常立即回滚</td></tr>
+                <tr><th>② 监控体系</th><td><span class="hl-cyan">系统</span>：延时/错误率/可用性 · <span class="hl-amber">模型</span>：Data Drift/效果衰减 · <span class="hl">业务</span>：核心业务指标</td></tr>
+                <tr><th>③ 数据回流</th><td>构建ETL管道 → 收集用户交互（隐式+显式反馈）→ 标注高质量数据 → 数据质量监控</td></tr>
+            </table>
+            <div class="sub-block" id="sb-data-return">
+                <div class="sub-header" onclick="toggleSub('sb-data-return')">
+                    <span class="sb-arr">▶</span> 数据回流详解
+                </div>
+                <div class="sub-body">
+                    <div class="alert info"><span class="alert-icon">🔑</span><div>线上数据是AI产品最宝贵的资产，必须从Day 1建立系统化的数据回流机制。</div></div>
+                    <table class="data-table">
+                        <tr><th>ETL管道</th><td>数据源接入 → 抽取 → 转换(标准化/脱敏) → 加载到数据仓库。实时：Kafka→Flink，离线：Airflow</td></tr>
+                        <tr><th>交互数据</th><td>隐式反馈（采纳/忽略/停留时长）+ 显式反馈（👍👎/纠错/举报）+ 上下文</td></tr>
+                        <tr><th>标注反馈</th><td>自动标注(用户行为=弱监督) + 人工精标(低置信度/投诉样本) + 主动学习策略</td></tr>
+                        <tr><th>质量监控</th><td>完整性、分布漂移检测、标注一致性抽检、异常数据识别、周/月自动报告</td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="deliverables"><h5>📦 交付物</h5><div class="deliv-grid">
+                <div class="deliv-item"><div class="deliv-icon">📺</div><div class="deliv-text">监控大盘<small>系统+模型+业务三维看板</small></div></div>
+                <div class="deliv-item"><div class="deliv-icon">🚨</div><div class="deliv-text">应急预案<small>回滚/降级/人工兜底方案</small></div></div>
+                <div class="deliv-item"><div class="deliv-icon">🔄</div><div class="deliv-text">数据回流管道<small>ETL+标注+质量监控全链路</small></div></div>
+            </div></div>
+        </div></div>
+    </div>
+
+    <div class="step-block" id="ops-2">
+        <div class="step-header" onclick="toggleStep('ops-2')">
+            <div class="step-num" style="background:var(--neon-vlow);color:var(--neon);border-color:rgba(0,255,136,0.3);">02</div>
+            <div class="step-info"><h4>3.2 持续迭代与优化</h4><p>对应流程图步骤④和橙色飞轮循环箭头，数据驱动模型越用越好</p></div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body"><div class="step-content">
+            <div class="roles-bar"><span class="roles-label">参与角色：</span><span class="role-tag r-lead">🧠 算法工程师（主R）</span><span class="role-tag r-pm">📋 产品</span><span class="role-tag r-data">📊 数据</span></div>
+            <p style="font-size:14px;color:var(--text);margin-bottom:12px;">流程图中<span style="color:#ff9e43;font-weight:700;">橙色飞轮循环箭头</span>就是数据飞轮的核心闭环：</p>
+            <div class="mini-flow">
+                <div class="mf-node mf-neon">线上数据</div><div class="mf-arrow">→</div><div class="mf-node mf-neon">标注</div><div class="mf-arrow">→</div><div class="mf-node mf-neon">模型重训</div><div class="mf-arrow">→</div><div class="mf-node mf-neon">A/B测试</div><div class="mf-arrow">→</div><div class="mf-node mf-neon">上线</div><div class="mf-arrow">→</div><div class="mf-node mf-neon">收集新数据</div><div class="mf-arrow">🔄</div>
+            </div>
+            <table class="data-table">
+                <tr><th>数据飞轮</th><td>线上数据→标注→模型重训→上线→收集新数据（无限闭环）</td></tr>
+                <tr><th>Bad Case驱动</th><td>定期Review会议，归因分析→数据补充/模型改进/规则补丁</td></tr>
+                <tr><th>模型迭代</th><td>定期重训（周/月级），模型版本管理，新模型走A/B流程</td></tr>
+                <tr><th>技术债清理</th><td>工程重构、性能优化、成本优化</td></tr>
+            </table>
+            <div class="deliverables"><h5>📦 交付物</h5><div class="deliv-grid">
+                <div class="deliv-item"><div class="deliv-icon">📊</div><div class="deliv-text">迭代版本记录<small>每轮改进的量化效果</small></div></div>
+                <div class="deliv-item"><div class="deliv-icon">📈</div><div class="deliv-text">效果趋势报告<small>核心指标的长期趋势图</small></div></div>
+            </div></div>
+        </div></div>
+    </div>
+
+    <div class="step-block" id="ops-3">
+        <div class="step-header" onclick="toggleStep('ops-3')">
+            <div class="step-num" style="background:var(--neon-vlow);color:var(--neon);border-color:rgba(0,255,136,0.3);">03</div>
+            <div class="step-info"><h4>3.3 商业化与生态建设</h4><p>对应流程图步骤⑤，商业模式、成本控制、合规治理、平台化</p></div>
+            <div class="step-chevron">▼</div>
+        </div>
+        <div class="step-body"><div class="step-content">
+            <div class="roles-bar"><span class="roles-label">参与角色：</span><span class="role-tag r-lead">📋 产品经理（主R）</span><span class="role-tag r-biz">📊 业务方</span><span class="role-tag r-ops">📈 运营</span><span class="role-tag r-algo">🧠 算法（合规）</span></div>
+            <table class="data-table">
+                <tr><th>商业模式</th><td>定价策略（调用量/订阅/增值）、ROI持续跟踪</td></tr>
+                <tr><th>成本控制</th><td>蒸馏/缓存/动态路由优化推理成本，算力采购策略</td></tr>
+                <tr><th>合规治理</th><td>AI伦理审查、可解释性报告、算法备案</td></tr>
+                <tr><th>平台化</th><td>能力开放（API/SDK）、插件生态、开发者社区</td></tr>
+                <tr><th>知识沉淀</th><td>方法论文档化、工具链标准化、团队能力培养</td></tr>
+            </table>
+            <div class="deliverables"><h5>📦 交付物</h5><div class="deliv-grid">
+                <div class="deliv-item"><div class="deliv-icon">💰</div><div class="deliv-text">商业运营报告<small>营收/成本/ROI分析</small></div></div>
+                <div class="deliv-item"><div class="deliv-icon">⚖️</div><div class="deliv-text">合规审计文档<small>伦理+法规+算法备案</small></div></div>
+                <div class="deliv-item"><div class="deliv-icon">🌐</div><div class="deliv-text">开放平台文档<small>API/SDK接入指南</small></div></div>
+            </div></div>
+        </div></div>
+    </div>
+
+</div>
+</section>
+
+<!-- Section Connector -->
+<div class="section-connector"><div class="connector-line" style="background:linear-gradient(180deg,var(--neon),var(--purple));"></div></div>
+
+<!-- ============================================================ -->
+<!--                     核心原则                                   -->
+<!-- ============================================================ -->
+<section class="phase-section" id="principles">
+<div class="container">
+    <div class="phase-header">
+        <div class="phase-label" style="color:var(--purple);">
+            <span class="label-line" style="background:var(--purple);"></span> CORE PRINCIPLES · 核心原则
+        </div>
+        <div class="phase-title">⭐ 贯穿全程的六条铁律</div>
+        <div class="phase-desc">这些原则是AI产品成功的底层逻辑，需要在每个阶段时刻牢记</div>
+    </div>
+
+    <div class="principle-grid">
+        <div class="principle-item" style="border-left-color:var(--amber);"><h4>🔄 数据飞轮思维</h4><p>从Day 1就设计好数据回流机制。数据是AI产品的核心壁垒，让产品越用越好。</p></div>
+        <div class="principle-item" style="border-left-color:var(--red);"><h4>🛡️ AI ≠ 万能</h4><p>始终保留人工兜底和规则降级方案。AI是工具，不是信仰。</p></div>
+        <div class="principle-item" style="border-left-color:var(--cyan);"><h4>📏 指标先行</h4><p>每个阶段开始前先定义好成功标准。没有指标的优化就是盲人摸象。</p></div>
+        <div class="principle-item" style="border-left-color:var(--neon);"><h4>⚡ 快速失败</h4><p>POC/MVP阶段快速验证，不行就及时止损。在正确的时机放弃也是能力。</p></div>
+        <div class="principle-item" style="border-left-color:var(--purple);"><h4>🔒 安全合规</h4><p>AI安全（幻觉/偏见/滥用）和数据合规是红线。红线问题零容忍。</p></div>
+        <div class="principle-item" style="border-left-color:var(--blue);"><h4>💰 成本意识</h4><p>效果 vs 成本的平衡，够用就好。不要用100分的成本追求99→100分的提升。</p></div>
+    </div>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;margin-top:40px;">
+        <h4 style="color:var(--neon);margin-bottom:8px;font-size:15px;">🎓 学习建议</h4>
+        <p style="font-size:14px;color:var(--text);">建议从上到下通读全文，理解完整流程后，用一个真实的AI产品案例对照走一遍。重点关注每个阶段的<span class="hl">角色对话</span>，理解不同角色在什么时机介入、沟通什么内容。</p>
+    </div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<div style="text-align:center;padding:60px 20px;color:var(--text-dim);font-size:13px;border-top:1px solid var(--border);margin-top:60px;">
+    <p style="color:var(--neon);font-weight:700;margin-bottom:4px;">> AI_PRODUCT_PIPELINE v2.0</p>
+    <p>Built with Neon Circuit Design · 持续更新中</p>
+</div>
+
+<!-- ============ SCRIPTS ============ -->
+<script>
+// Toggle step blocks
+function toggleStep(id){
+    const el=document.getElementById(id);
+    el.classList.toggle('open');
+    if(el.classList.contains('open')){
+        const msgs=el.querySelectorAll('.chat-msg,.chat-note');
+        msgs.forEach(m=>{
+            m.style.animation='none';
+            m.offsetHeight;
+            m.style.animation='';
+        });
+    }
+}
+
+// Toggle sub blocks
+function toggleSub(id){
+    document.getElementById(id).classList.toggle('open');
+}
+
+// Checklist with celebration
+let checklistLocked=false;
+function toggleCheck(li){
+    if(checklistLocked)return;
+    li.classList.toggle('checked');
+    checkAllDone();
+}
+function checkAllDone(){
+    const items=[...document.querySelectorAll('#launchChecklist li')];
+    if(items.every(li=>li.classList.contains('checked'))&&!checklistLocked){
+        checklistLocked=true;
+        items.forEach(li=>li.classList.add('locked'));
+        const tip=document.getElementById('checklistTip');
+        tip.textContent='✅ 已经都check过了，可以上线了！';
+        tip.classList.add('done');
+        showCelebration();
+    }
+}
+function showCelebration(){
+    document.getElementById('celebOverlay').classList.add('show');
+    launchConfetti();
+    setTimeout(()=>{
+        document.getElementById('celebOverlay').classList.remove('show');
+        stopConfetti();
+        setTimeout(()=>document.getElementById('ops').scrollIntoView({behavior:'smooth'}),300);
+    },4000);
+}
+
+// Confetti
+const canvas=document.getElementById('confetti-canvas'),ctx=canvas.getContext('2d');
+let particles=[],confettiRunning=false;
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+window.addEventListener('resize',resizeCanvas);resizeCanvas();
+function launchConfetti(){
+    confettiRunning=true;particles=[];
+    const colors=['#00ff88','#ffb800','#3b82f6','#bf5af2','#ff3b5c','#00e5ff','#ff6eb4'];
+    for(let i=0;i<150;i++) particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,r:Math.random()*6+2,color:colors[~~(Math.random()*colors.length)],vx:(Math.random()-0.5)*3,vy:Math.random()*4+2,rot:Math.random()*360,rotV:(Math.random()-0.5)*10});
+    animateConfetti();
+}
+function animateConfetti(){
+    if(!confettiRunning)return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=p.rotV;p.vy+=0.05;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.color;ctx.fillRect(-p.r/2,-p.r*1.5,p.r,p.r*3);ctx.restore();});
+    requestAnimationFrame(animateConfetti);
+}
+function stopConfetti(){confettiRunning=false;ctx.clearRect(0,0,canvas.width,canvas.height);}
+
+// Nav scroll spy
+const sections=document.querySelectorAll('.phase-section, .hero');
+const navLinks=document.querySelectorAll('.nav-link');
+
+window.addEventListener('scroll',()=>{
+    let current='hero';
+    sections.forEach(s=>{
+        if(window.scrollY >= s.offsetTop - 100){
+            current=s.id;
+        }
+    });
+    navLinks.forEach(l=>{
+        l.classList.remove('active');
+        if(l.getAttribute('href')==='#'+current) l.classList.add('active');
+    });
+});
+</script>
+
+</body>
+</html>
